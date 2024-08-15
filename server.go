@@ -2,7 +2,7 @@ package jsonrpc4go
 
 import (
 	"errors"
-	"github.com/sunquakes/jsonrpc4go/server"
+	"github.com/BleethNie/jsonrpc4go/server"
 )
 
 func NewServer(protocol string, port int) (server.Server, error) {

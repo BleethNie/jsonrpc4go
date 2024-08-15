@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go/discovery"
+	"github.com/BleethNie/jsonrpc4go/discovery"
 	"io/ioutil"
 	"net/http"
 	"net/url"

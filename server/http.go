@@ -3,8 +3,8 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go/common"
-	"github.com/sunquakes/jsonrpc4go/discovery"
+	"github.com/BleethNie/jsonrpc4go/common"
+	"github.com/BleethNie/jsonrpc4go/discovery"
 	"golang.org/x/time/rate"
 	"io/ioutil"
 	"log"

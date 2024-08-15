@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/sunquakes/jsonrpc4go/discovery"
+	"github.com/BleethNie/jsonrpc4go/discovery"
 	"golang.org/x/time/rate"
 )
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go"
+	"github.com/BleethNie/jsonrpc4go"
 )
 
 type Params struct {

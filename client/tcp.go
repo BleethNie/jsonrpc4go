@@ -3,8 +3,8 @@ package client
 import (
 	"bytes"
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go/common"
-	"github.com/sunquakes/jsonrpc4go/discovery"
+	"github.com/BleethNie/jsonrpc4go/common"
+	"github.com/BleethNie/jsonrpc4go/discovery"
 	"net"
 	"strconv"
 	"time"

@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go/discovery/consul"
+	"github.com/BleethNie/jsonrpc4go/discovery/consul"
 	"net/http"
 	"net/http/httptest"
 	"net/url"

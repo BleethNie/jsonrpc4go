@@ -1,7 +1,7 @@
 package servers
 
 import (
-	"github.com/sunquakes/jsonrpc4go/discovery"
+	"github.com/BleethNie/jsonrpc4go/discovery"
 )
 
 type Servers string

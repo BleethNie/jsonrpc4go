@@ -2,8 +2,8 @@ package test
 
 import (
 	"context"
-	"github.com/sunquakes/jsonrpc4go/discovery/etcd"
-	"github.com/sunquakes/jsonrpc4go/discovery/etcd/etcdserverpb"
+	"github.com/BleethNie/jsonrpc4go/discovery/etcd"
+	"github.com/BleethNie/jsonrpc4go/discovery/etcd/etcdserverpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 	"net"

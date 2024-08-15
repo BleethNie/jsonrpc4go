@@ -7,7 +7,7 @@
 
 ## 🧰 安装
 ```
-go get -u github.com/Bleeth/jsonrpc4go
+go get -u github.com/BleethNie/jsonrpc4go
 ```
 ## 📖 开始使用
 - 服务端代码

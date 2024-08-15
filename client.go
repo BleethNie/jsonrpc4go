@@ -2,8 +2,8 @@ package jsonrpc4go
 
 import (
 	"errors"
-	"github.com/sunquakes/jsonrpc4go/client"
-	"github.com/sunquakes/jsonrpc4go/discovery"
+	"github.com/BleethNie/jsonrpc4go/client"
+	"github.com/BleethNie/jsonrpc4go/discovery"
 	"reflect"
 )
 

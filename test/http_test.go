@@ -2,10 +2,10 @@ package test
 
 import (
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go"
-	"github.com/sunquakes/jsonrpc4go/common"
-	"github.com/sunquakes/jsonrpc4go/discovery/consul"
-	"github.com/sunquakes/jsonrpc4go/discovery/nacos"
+	"github.com/BleethNie/jsonrpc4go"
+	"github.com/BleethNie/jsonrpc4go/common"
+	"github.com/BleethNie/jsonrpc4go/discovery/consul"
+	"github.com/BleethNie/jsonrpc4go/discovery/nacos"
 	"net/http"
 	"net/http/httptest"
 	"testing"

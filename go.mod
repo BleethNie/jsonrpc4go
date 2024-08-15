@@ -1,4 +1,4 @@
-module github.com/Bleeth/jsonrpc4go
+module github.com/BleethNie/jsonrpc4go
 
 go 1.21
 
