@@ -1,6 +1,6 @@
-module github.com/sunquakes/jsonrpc4go
+module github.com/Bleeth/jsonrpc4go
 
-go 1.19
+go 1.21
 
 require (
 	github.com/mitchellh/mapstructure v1.5.0
