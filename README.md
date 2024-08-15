@@ -1,16 +1,21 @@
-English | [🇨🇳中文](README_ZH.md)
 # jsonrpc4go
-## 🧰 Installing
+
+## 说明
+
+> fork自 https://github.com/sunquakes/jsonrpc4go 满足个性化需求
+
+
+## 🧰 安装
 ```
-go get -u github.com/BleethNie/jsonrpc4go
+go get -u github.com/Bleeth/jsonrpc4go
 ```
-## 📖 Getting started
-- Server
+## 📖 开始使用
+- 服务端代码
 ```go
 package main
 
 import (
-    "github.com/BleethNie/jsonrpc4go"
+    "github.com/Bleeth/jsonrpc4go"
 )
 
 type IntRpc struct{}
@@ -27,18 +32,18 @@ func (i *IntRpc) Add(params *Params, result *int) error {
 }
 
 func main() {
-	s, _ := jsonrpc4go.NewServer("http", 3232) // the protocol is http
+	s, _ := jsonrpc4go.NewServer("http", 3232) // http协议
 	s.Register(new(IntRpc))
 	s.Start()
 }
 ```
-- Client
+- 客户端代码
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/BleethNie/jsonrpc4go"
+	"github.com/sunquakes/jsonrpc4go"
 )
 
 type Params struct {
@@ -52,116 +57,126 @@ type Result2 struct {
 
 func main() {
 	result := new(int)
-	c, _ := jsonrpc4go.NewClient("IntRpc", "http", "127.0.0.1:3232")
+	c, _ := jsonrpc4go.NewClient("IntRpc", "http", "127.0.0.1:3232") // http协议
 	err := c.Call("Add", Params{1, 6}, result, false)
-	// data sent: {"id":"1604283212", "jsonrpc":"2.0", "method":"IntRpc/Add", "params":{"a":1,"b":6}}
-	// data received: {"id":"1604283212", "jsonrpc":"2.0", "result":7}
+	// 发送的数据格式: {"id":"1604283212", "jsonrpc":"2.0", "method":"IntRpc/Add", "params":{"a":1,"b":6}}
+	// 接收的数据格式: {"id":"1604283212", "jsonrpc":"2.0", "result":7}
 	fmt.Println(err) // nil
 	fmt.Println(*result) // 7
 }
 ```
-## ⚔️ Test
+## ⚔️ 测试
 ```
 go test -v ./test/...
 ```
-## 🚀 More features
-- TCP protocol
+## 🚀 更多特性
+- tcp协议
 ```go
-s, _ := jsonrpc4go.NewServer("tcp", 3232) // the protocol is tcp
+s, _ := jsonrpc4go.NewServer("tcp", 3232) // tcp协议
 
-c, _ := jsonrpc4go.NewClient("IntRpc", "tcp", "127.0.0.1:3232") // the protocol is tcp
+c, _ := jsonrpc4go.NewClient("IntRpc", "tcp", "127.0.0.1:3232") // tcp协议
 ```
-- Hooks (Add the following code before 's.Start()')
+- 钩子 (在代码's.Start()'前添加下面的代码)
 ```go
-// Set the hook function of before method execution
+// 在方法前执行的钩子方法
 s.SetBeforeFunc(func(id interface{}, method string, params interface{}) error {
-    // If the function returns an error, the program stops execution and returns an error message to the client
-    // return errors.New("Custom Error")
+    // 如果方法返回error类型，服务端停止执行并返回错误信息到客户端
+    // 例：return errors.New("Custom Error")
     return nil
 })
-// Set the hook function of after method execution
+// 在方法后执行的钩子方法
 s.SetAfterFunc(func(id interface{}, method string, result interface{}) error {
-    // If the function returns an error, the program stops execution and returns an error message to the client
-    // return errors.New("Custom Error")
+    // 如果方法返回error类型，服务端停止执行并返回错误信息到客户端
+    // 例：return errors.New("Custom Error")
     return nil
 })
 ```
-- Rate limit (Add the following code before 's.Start()')
+- 限流 (在代码's.Start()'前添加下面的代码)
 ```go
-s.SetRateLimit(20, 10) //The maximum concurrent number is 10, The maximum request speed is 20 times per second
+s.SetRateLimit(20, 10) // 最大并发数为10, 最大请求数为每秒20个
 ```
-- Custom package EOF when the protocol is tcp
+
+
+- tcp协议时自定义请求结束符
 ```go
-// Add the following code before 's.Start()'
-s.SetOptions(server.TcpOptions{"aaaaaa", nil}) // Custom package EOF when the protocol is tcp
-// Add the following code before 'c.Call()' or 'c.BatchCall()'
-c.SetOptions(client.TcpOptions{"aaaaaa", nil}) // Custom package EOF when the protocol is tcp
+// 在代码's.Start()'前添加下面的代码
+s.SetOptions(server.TcpOptions{"aaaaaa", nil}) // 仅tcp协议生效
+// 在代码'c.Call()'或'c.BatchCall()'前添加下面的代码
+c.SetOptions(client.TcpOptions{"aaaaaa", nil}) // 仅tcp协议生效
 ```
-- Notify
+
+- 通知请求
 ```go
-// notify
+// 通知
 result2 := new(Result2)
 err2 := c.Call("Add2", Params{1, 6}, result2, true)
-// data sent: {"jsonrpc":"2.0","method":"IntRpc/Add2","params":{"a":1,"b":6}}
-// data received: {"jsonrpc":"2.0","result":{"c":7}}
+// 发送的数据格式: {"jsonrpc":"2.0","method":"IntRpc/Add2","params":{"a":1,"b":6}}
+// 接收的数据格式: {"jsonrpc":"2.0","result":{"c":7}}
 fmt.Println(err2) // nil
 fmt.Println(*result2) // {7}
 ```
-- Batch call
+
+
+- 批量请求
 ```go
-// batch call
+// 批量请求
 result3 := new(int)
 err3 := c.BatchAppend("Add1", Params{1, 6}, result3, false)
 result4 := new(int)
 err4 := c.BatchAppend("Add", Params{2, 3}, result4, false)
 c.BatchCall()
-// data sent: [{"id":"1604283212","jsonrpc":"2.0","method":"IntRpc/Add1","params":{"a":1,"b":6}},{"id":"1604283212","jsonrpc":"2.0","method":"IntRpc/Add","params":{"a":2,"b":3}}]
-// data received: [{"id":"1604283212","jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found","data":null}},{"id":"1604283212","jsonrpc":"2.0","result":5}]
+// 发送的数据格式: [{"id":"1604283212","jsonrpc":"2.0","method":"IntRpc/Add1","params":{"a":1,"b":6}},{"id":"1604283212","jsonrpc":"2.0","method":"IntRpc/Add","params":{"a":2,"b":3}}]
+// 接收的数据格式: [{"id":"1604283212","jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found","data":null}},{"id":"1604283212","jsonrpc":"2.0","result":5}]
 fmt.Println((*err3).Error()) // Method not found
 fmt.Println(*result3) // 0
 fmt.Println(*err4) // nil
 fmt.Println(*result4) // 5
 ```
-- Client-Side Load-Balancing
+
+
+- 用户端负载均衡
 ```go
 c, _ := jsonrpc4go.NewClient("IntRpc", "tcp", "127.0.0.1:3232,127.0.0.1:3233,127.0.0.1:3234")
 ```
 
-## Service registration & discovery
+## 服务注册和发现
 ### Consul
 ```go
 /**
- * check: true or false. The switch of the health check.
- * interval: The interval of the health check. For example: 10s.
- * timeout: Timeout. For example: 10s.
- * instanceId: Instance ID. Distinguish the same service in different nodes. For example: 1.
+ * check: true或者false, 开启健康检查
+ * interval: 健康检查周期，例：10s
+ * timeout: 请求超时时间，例：10s
+ * instanceId: 实例ID，同一服务多负载时区分用，例：1
  */
 dc, _ := consul.NewConsul("http://localhost:8500?check=true&instanceId=1&interval=10s&timeout=10s")
 
-// Set in the server.
+// 在服务端设置，如果使用默认的节点ip 
 s, _ := jsonrpc4go.NewServer("tcp", 3614)
-// If the default node ip is used, the second parameter can be set ""
+// hostname如果为""，则会自动获取当前节点ip注册
 s.SetDiscovery(dc, "127.0.0.1")
 s.Register(new(IntRpc))
 s.Start()
 
-// Set in the client
+// 在客户端设置
 c, _ := jsonrpc4go.NewClient("IntRpc", "tcp", dc)
 ```
 ### Nacos
 ```go
 dc, _ := nacos.NewNacos("http://127.0.0.1:8849")
 
-// Set in the server.
+// 在服务端设置，如果使用默认的节点ip 
 s, _ := jsonrpc4go.NewServer("tcp", 3616)
-// If the default node ip is used, the second parameter can be set ""
+// hostname如果为""，则会自动获取当前节点ip注册
 s.SetDiscovery(dc, "127.0.0.1")
 s.Register(new(IntRpc))
 s.Start()
 
-// Set in the client
+// 在客户端设置
 c, _ := jsonrpc4go.NewClient("IntRpc", "tcp", dc)
 ```
 
+
+
 ## 📄 License
-Source code in `jsonrpc4go` is available under the [Apache-2.0 license](/LICENSE).
+`jsonrpc4go`代码遵守[Apache-2.0 license](/LICENSE)开源协议。
+

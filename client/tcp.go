@@ -28,8 +28,9 @@ type TcpClient struct {
 }
 
 type TcpOptions struct {
-	PackageEof       string
+	PackageEof       string //自定义结束符
 	PackageMaxLength int64
+	PackageSuffix    string //有时结束符和实际数据混合,需要把数据补上
 }
 
 func (p *Tcp) NewClient() Client {
@@ -40,6 +41,7 @@ func NewTcpClient(name string, protocol string, address string, dc discovery.Dri
 	options := TcpOptions{
 		"\r\n",
 		1024 * 1024 * 2,
+		"",
 	}
 	pool := NewPool(name, address, dc, PoolOptions{5, 5})
 	return &TcpClient{
@@ -74,16 +76,19 @@ func (c *TcpClient) BatchCall() error {
 		var (
 			req any
 		)
-		method := fmt.Sprintf("%s/%s", c.Name, v.Method)
+		realMethod := fmt.Sprintf("%s/%s", c.Name, v.Method)
+		if c.Name == "" {
+			realMethod = fmt.Sprintf("%s", v.Method)
+		}
 		if v.IsNotify == true {
-			req = common.Rs(nil, method, v.Params)
+			req = common.Rs(nil, realMethod, v.Params)
 		} else {
-			req = common.Rs(strconv.FormatInt(time.Now().Unix(), 10), method, v.Params)
+			req = common.Rs(strconv.FormatInt(time.Now().Unix(), 10), realMethod, v.Params)
 		}
 		br = append(br, req)
 	}
 	bReq := common.JsonBatchRs(br)
-	bReq = append(bReq, []byte(c.Options.PackageEof)...)
+	bReq = append(bReq)
 	err = c.handleFunc(bReq, c.RequestList)
 	c.RequestList = make([]*common.SingleRequest, 0)
 	return err
@@ -102,18 +107,21 @@ func (c *TcpClient) Call(method string, params any, result any, isNotify bool) e
 		err error
 		req []byte
 	)
-	method = fmt.Sprintf("%s/%s", c.Name, method)
-	if isNotify {
-		req = common.JsonRs(nil, method, params)
-	} else {
-		req = common.JsonRs(strconv.FormatInt(time.Now().Unix(), 10), method, params)
+	realMethod := fmt.Sprintf("%s/%s", c.Name, method)
+	if c.Name == "" {
+		realMethod = fmt.Sprintf("%s", method)
 	}
-	req = append(req, []byte(c.Options.PackageEof)...)
+	if isNotify {
+		req = common.JsonRs(nil, realMethod, params)
+	} else {
+		req = common.JsonRs(strconv.FormatInt(time.Now().Unix(), 10), realMethod, params)
+	}
+	req = append(req)
 	err = c.handleFunc(req, result)
 	return err
 }
 
-func (c *TcpClient) handleFunc(b []byte, result any) error {
+func (c *TcpClient) handleFunc(req []byte, result any) error {
 	var (
 		err  error
 		conn net.Conn
@@ -121,7 +129,7 @@ func (c *TcpClient) handleFunc(b []byte, result any) error {
 
 	conn, err = c.Pool.Borrow()
 	if err == nil {
-		_, err = conn.Write(b)
+		_, err = conn.Write(req)
 	}
 	if err != nil {
 		conn, err = c.Pool.BorrowAfterRemove(conn)
@@ -129,7 +137,7 @@ func (c *TcpClient) handleFunc(b []byte, result any) error {
 			c.Pool.Remove(conn)
 			return err
 		}
-		_, err = conn.Write(b)
+		_, err = conn.Write(req)
 		if err != nil {
 			c.Pool.Remove(conn)
 			return err
@@ -158,6 +166,13 @@ func (c *TcpClient) handleFunc(b []byte, result any) error {
 			break
 		}
 	}
-	err = common.GetResult(data[:l-eofl], result)
+	//移除EOF
+	data = data[:l-eofl]
+	//添加
+	pSuffix := []byte(c.Options.PackageSuffix)
+	if len(pSuffix) > 0 {
+		data = append(data, pSuffix...)
+	}
+	err = common.GetResult(data, result)
 	return err
 }
