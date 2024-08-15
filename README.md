@@ -2,7 +2,7 @@ English | [🇨🇳中文](README_ZH.md)
 # jsonrpc4go
 ## 🧰 Installing
 ```
-go get -u github.com/sunquakes/jsonrpc4go
+go get -u github.com/BleethNie/jsonrpc4go
 ```
 ## 📖 Getting started
 - Server
@@ -10,7 +10,7 @@ go get -u github.com/sunquakes/jsonrpc4go
 package main
 
 import (
-    "github.com/sunquakes/jsonrpc4go"
+    "github.com/BleethNie/jsonrpc4go"
 )
 
 type IntRpc struct{}
@@ -38,7 +38,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/sunquakes/jsonrpc4go"
+	"github.com/BleethNie/jsonrpc4go"
 )
 
 type Params struct {
