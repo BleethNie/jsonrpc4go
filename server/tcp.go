@@ -14,7 +14,8 @@ import (
 )
 
 type Tcp struct {
-	Port int
+	Hostname string
+	Port     int
 }
 
 type TcpServer struct {
@@ -37,7 +38,7 @@ func (p *Tcp) NewServer() Server {
 		1024 * 1024 * 2,
 	}
 	return &TcpServer{
-		"",
+		p.Hostname,
 		p.Port,
 		common.Server{
 			sync.Map{},

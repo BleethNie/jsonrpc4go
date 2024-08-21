@@ -6,7 +6,7 @@ import (
 	"github.com/BleethNie/jsonrpc4go/common"
 	"github.com/BleethNie/jsonrpc4go/discovery"
 	"golang.org/x/time/rate"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -35,7 +35,8 @@ func GetHostname() (string, error) {
 }
 
 type Http struct {
-	Port int
+	Hostname string
+	Port     int
 }
 
 type HttpServer struct {
@@ -53,7 +54,7 @@ type HttpOptions struct {
 func (p *Http) NewServer() Server {
 	options := HttpOptions{}
 	return &HttpServer{
-		"",
+		p.Hostname,
 		p.Port,
 		common.Server{
 			sync.Map{},
@@ -141,7 +142,7 @@ func (s *HttpServer) handleFunc(w http.ResponseWriter, r *http.Request) {
 		data []byte
 	)
 	w.Header().Set("Content-Type", "application/json")
-	if data, err = ioutil.ReadAll(r.Body); err != nil {
+	if data, err = io.ReadAll(r.Body); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
