@@ -104,6 +104,13 @@ func (s *HttpServer) Register(m any) {
 	}
 }
 
+func (s *HttpServer) RegisterWithName(m any, name string) {
+	err := s.Server.RegisterWithName(m, name)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+}
+
 func (s *HttpServer) SetOptions(httpOptions any) {
 	s.Options = httpOptions.(HttpOptions)
 }

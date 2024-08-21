@@ -28,9 +28,10 @@ type TcpClient struct {
 }
 
 type TcpOptions struct {
-	PackageEof       string //自定义结束符
-	PackageMaxLength int64
-	PackageSuffix    string //有时结束符和实际数据混合,需要把数据补上
+	ReqAddEof     string //请求时添加eof字符
+	RespCheckEof  string //自定义结束符
+	RespMaxLength int64
+	RespAddSuffix string //有时结束符和实际数据混合,需要把数据补上
 }
 
 func (p *Tcp) NewClient() Client {
@@ -39,8 +40,9 @@ func (p *Tcp) NewClient() Client {
 
 func NewTcpClient(name string, protocol string, address string, dc discovery.Driver) *TcpClient {
 	options := TcpOptions{
-		"\r\n",
-		1024 * 1024 * 2,
+		"",
+		"\n",
+		512 * 1024,
 		"",
 	}
 	pool := NewPool(name, address, dc, PoolOptions{5, 5})
@@ -116,7 +118,7 @@ func (c *TcpClient) Call(method string, params any, result any, isNotify bool) e
 	} else {
 		req = common.JsonRs(strconv.FormatInt(time.Now().Unix(), 10), realMethod, params)
 	}
-	req = append(req)
+	req = append(req, []byte(c.Options.ReqAddEof)...)
 	err = c.handleFunc(req, result)
 	return err
 }
@@ -130,8 +132,7 @@ func (c *TcpClient) handleFunc(req []byte, result any) error {
 	conn, err = c.Pool.Borrow()
 	if err == nil {
 		_, err = conn.Write(req)
-	}
-	if err != nil {
+	} else {
 		conn, err = c.Pool.BorrowAfterRemove(conn)
 		if err != nil {
 			c.Pool.Remove(conn)
@@ -143,16 +144,17 @@ func (c *TcpClient) handleFunc(req []byte, result any) error {
 			return err
 		}
 	}
+
 	defer c.Pool.Release(conn)
 
-	eofb := []byte(c.Options.PackageEof)
+	eofb := []byte(c.Options.RespCheckEof)
 	eofl := len(eofb)
 	var (
 		data []byte
 	)
 	l := 0
 	for {
-		var buf = make([]byte, c.Options.PackageMaxLength)
+		var buf = make([]byte, c.Options.RespMaxLength)
 		n, err := conn.Read(buf)
 		if err != nil {
 			if n == 0 {
@@ -169,7 +171,7 @@ func (c *TcpClient) handleFunc(req []byte, result any) error {
 	//移除EOF
 	data = data[:l-eofl]
 	//添加
-	pSuffix := []byte(c.Options.PackageSuffix)
+	pSuffix := []byte(c.Options.RespAddSuffix)
 	if len(pSuffix) > 0 {
 		data = append(data, pSuffix...)
 	}

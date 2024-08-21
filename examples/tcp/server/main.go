@@ -1,6 +1,8 @@
 package main
 
-import "github.com/BleethNie/jsonrpc4go"
+import (
+	"github.com/BleethNie/jsonrpc4go"
+)
 
 type IntRpc struct{}
 
@@ -19,13 +21,15 @@ func (i *IntRpc) Add(params *Params, result *int) error {
 	return nil
 }
 
-func (i *IntRpc) Add2(params *Params, result *Result) error {
-	result.C = params.A + params.B
+func (i *IntRpc) Add2(params *Params, result *[]Result) error {
+	*result = append(*result, Result{C: params.A})
+	*result = append(*result, Result{C: params.B})
 	return nil
 }
 
 func main() {
 	s, _ := jsonrpc4go.NewServer("tcp", 3232)
-	s.Register(new(IntRpc))
+
+	s.RegisterWithName(new(IntRpc), "")
 	s.Start()
 }

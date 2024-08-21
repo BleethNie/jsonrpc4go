@@ -42,40 +42,48 @@ type NotifyRequest struct {
 }
 
 func ParseRequestMethod(method string) (sName string, mName string, err error) {
-	var (
-		m  string
-		sp int
-	)
-	first := method[0:1]
-	if first == "." || first == "/" {
-		method = method[1:]
-	}
-	msg := "rpc: method request ill-formed: %s; need x.y or x/y"
-	if strings.Count(method, ".") != 1 && strings.Count(method, "/") != 1 {
-		m = fmt.Sprintf(msg, method)
-		Debug(m)
-		return sName, mName, errors.New(m)
+	//var (
+	//	m  string
+	//	sp int
+	//)
+	//first := method[0:1]
+	//if first == "." || first == "/" {
+	//	method = method[1:]
+	//}
+	//msg := "rpc: method request ill-formed: %s; need x.y or x/y"
+	//if strings.Count(method, ".") != 1 && strings.Count(method, "/") != 1 {
+	//	m = fmt.Sprintf(msg, method)
+	//	Debug(m)
+	//	return sName, mName, errors.New(m)
+	//}
+	//if strings.Count(method, ".") == 1 {
+	//	sp = strings.LastIndex(method, ".")
+	//	if sp < 0 {
+	//		m = fmt.Sprintf(msg, method)
+	//		return sName, mName, errors.New(m)
+	//	}
+	//
+	//	sName = method[:sp]
+	//	mName = method[sp+1:]
+	//} else if strings.Count(method, "/") == 1 {
+	//	sp = strings.LastIndex(method, "/")
+	//	if sp < 0 {
+	//		m = fmt.Sprintf(msg, method)
+	//		return sName, mName, errors.New(m)
+	//	}
+	//
+	//	sName = method[:sp]
+	//	mName = method[sp+1:]
+	//}
+	if strings.Count(method, "/") == 1 {
+		names := strings.Split(method, "/")
+		return names[0], names[1], nil
 	}
 	if strings.Count(method, ".") == 1 {
-		sp = strings.LastIndex(method, ".")
-		if sp < 0 {
-			m = fmt.Sprintf(msg, method)
-			return sName, mName, errors.New(m)
-		}
-
-		sName = method[:sp]
-		mName = method[sp+1:]
-	} else if strings.Count(method, "/") == 1 {
-		sp = strings.LastIndex(method, "/")
-		if sp < 0 {
-			m = fmt.Sprintf(msg, method)
-			return sName, mName, errors.New(m)
-		}
-
-		sName = method[:sp]
-		mName = method[sp+1:]
+		names := strings.Split(method, ".")
+		return names[0], names[1], nil
 	}
-	return sName, mName, err
+	return "", "", errors.New("rpc: method request ill-formed: %s; need x.y or x/y")
 }
 
 func FilterRequestBody(jsonMap map[string]any) map[string]any {
@@ -130,17 +138,17 @@ func GetStruct(d any, s any) error {
 	var jsonMap = make(map[string]any)
 	switch reflect.TypeOf(d).Kind() {
 	case reflect.Map:
-		if t.NumField() != len(d.(map[string]any)) {
-			m = fmt.Sprintf("json: The number of parameters does not match")
-			Debug(m)
-			return errors.New(m)
-		}
+		//if t.NumField() != len(d.(map[string]any)) {
+		//	m = fmt.Sprintf("json: The number of parameters does not match")
+		//	Debug(m)
+		//	return errors.New(m)
+		//}
 		for k := 0; k < t.NumField(); k++ {
 			lk := strings.ToLower(t.Field(k).Name)
 			if _, ok := d.(map[string]any)[lk]; ok != true {
 				m = fmt.Sprintf("json: can not find field \"%s\"", lk)
 				Debug(m)
-				return errors.New(m)
+				//return errors.New(m)
 			}
 		}
 		jsonMap = d.(map[string]any)

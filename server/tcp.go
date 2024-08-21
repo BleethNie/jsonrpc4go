@@ -28,13 +28,15 @@ type TcpServer struct {
 }
 
 type TcpOptions struct {
-	PackageEof       string
-	PackageMaxLength int64
+	ReqCheckEof  string
+	RespAddEof   string
+	ReqMaxLength int64
 }
 
 func (p *Tcp) NewServer() Server {
 	options := TcpOptions{
-		"\r\n",
+		"\n",
+		"",
 		1024 * 1024 * 2,
 	}
 	return &TcpServer{
@@ -61,13 +63,13 @@ func (s *TcpServer) Start() {
 		s.Server.Sm.Range(register)
 	}
 	// Start the server
-	var addr = fmt.Sprintf("0.0.0.0:%d", s.Port)
+	var addr = fmt.Sprintf("%s:%d", s.Hostname, s.Port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
 		log.Panic(err.Error())
 	}
 	listener, _ := net.ListenTCP("tcp", tcpAddr)
-	log.Printf("Listening tcp://0.0.0.0:%d", s.Port)
+	log.Printf("Listening tcp://%s:%d", s.Hostname, s.Port)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	s.Event <- 0
@@ -92,6 +94,10 @@ func (s *TcpServer) DiscoveryRegister(key, value interface{}) bool {
 
 func (s *TcpServer) Register(m any) {
 	s.Server.Register(m)
+}
+
+func (s *TcpServer) RegisterWithName(m any, name string) {
+	s.Server.RegisterWithName(m, name)
 }
 
 func (s *TcpServer) SetOptions(tcpOptions any) {
@@ -134,7 +140,7 @@ func (s *TcpServer) handleFunc(ctx context.Context, conn net.Conn) {
 	default:
 		//	do nothing
 	}
-	eofb := []byte(s.Options.PackageEof)
+	eofb := []byte(s.Options.ReqCheckEof)
 	eofl := len(eofb)
 	for {
 		var (
@@ -142,7 +148,7 @@ func (s *TcpServer) handleFunc(ctx context.Context, conn net.Conn) {
 		)
 		l := 0
 		for {
-			var buf = make([]byte, s.Options.PackageMaxLength)
+			var buf = make([]byte, s.Options.ReqMaxLength)
 			n, err := conn.Read(buf)
 			if err != nil {
 				if n == 0 {

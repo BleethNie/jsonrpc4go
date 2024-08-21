@@ -19,6 +19,7 @@ type Server interface {
 	SetRateLimit(rate.Limit, int)
 	Start()
 	Register(s any)
+	RegisterWithName(s any, name string)
 	DiscoveryRegister(key, value interface{}) bool
 	GetEvent() <-chan int
 }

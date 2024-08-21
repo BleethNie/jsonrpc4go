@@ -57,7 +57,7 @@ type RpcCommonResp struct {
 
 func TestTcpCallMethod2(t *testing.T) {
 	c, _ := jsonrpc4go.NewClient("", "tcp", "192.168.199.2:1234")
-	c.SetOptions(client.TcpOptions{PackageEof: "}\n", PackageSuffix: "}", PackageMaxLength: 1024 * 1024 * 2}) // Custom package EOF when the protocol is tcp
+	c.SetOptions(client.TcpOptions{RespCheckEof: "}\n", RespAddSuffix: "}", RespMaxLength: 1024 * 1024 * 2}) // Custom package EOF when the protocol is tcp
 	var params map[string]interface{}
 	json.Unmarshal([]byte(`{"task_id":0,"device_id":1,"points":[{"id":1,"value":3},{"id":2,"value":8}]}`), &params)
 	result := new(RpcCommonResp)
@@ -107,13 +107,13 @@ func TestTcpBatchCall(t *testing.T) {
 func TestSetOption(t *testing.T) {
 	go func() {
 		s, _ := jsonrpc4go.NewServer("tcp", 3605)
-		s.SetOptions(server.TcpOptions{"aaaaaa", 2 * 1024 * 1024})
+		s.SetOptions(server.TcpOptions{"aaaaaa", "", 2 * 1024 * 1024})
 		s.Register(new(IntRpc))
 		s.Start()
 	}()
 	time.Sleep(time.Duration(2) * time.Second)
 	s, _ := jsonrpc4go.NewClient("IntRpc", "tcp", "127.0.0.1:3605")
-	s.SetOptions(client.TcpOptions{"aaaaaa", 2 * 1024 * 1024, ""})
+	s.SetOptions(client.TcpOptions{"", "aaaaaa", 2 * 1024 * 1024, ""})
 	params := Params{1, 2}
 	result := new(Result)
 	s.Call("Add", &params, result, false)
@@ -221,7 +221,7 @@ func (i *LongRpc) Add(params *LongParams, result *LongResult) error {
 func TestLongPackageTcpCall(t *testing.T) {
 	go func() {
 		s, _ := jsonrpc4go.NewServer("tcp", 3609)
-		s.SetOptions(server.TcpOptions{"\r\n", 2 * 1024 * 1024})
+		s.SetOptions(server.TcpOptions{"\r\n", "", 2 * 1024 * 1024})
 		s.Register(new(LongRpc))
 		s.Start()
 	}()
@@ -232,7 +232,7 @@ func TestLongPackageTcpCall(t *testing.T) {
 		go func(group *sync.WaitGroup) {
 			defer group.Done()
 			c, _ := jsonrpc4go.NewClient("LongRpc", "tcp", "127.0.0.1:3609")
-			c.SetOptions(client.TcpOptions{"\r\n", 2 * 1024 * 1024, ""})
+			c.SetOptions(client.TcpOptions{"", "\r\n", 2 * 1024 * 1024, ""})
 			params := LongParams{LongString1, LongString2}
 			result := new(LongResult)
 			for j := 0; j < 100; j++ {

@@ -48,6 +48,18 @@ func (svr *Server) Register(s any) error {
 	return nil
 }
 
+func (svr *Server) RegisterWithName(s any, sname string) error {
+	svc := new(Service)
+	svc.V = reflect.ValueOf(s)
+	svc.T = reflect.TypeOf(s)
+	svc.Name = sname
+	svc.Mm = RegisterMethods(svc.T)
+	if _, err := svr.Sm.LoadOrStore(sname, svc); err {
+		return errors.New("rpc: service already defined: " + sname)
+	}
+	return nil
+}
+
 func RegisterMethods(s reflect.Type) map[string]*Method {
 	mm := make(map[string]*Method)
 	for m := 0; m < s.NumMethod(); m++ {
@@ -132,9 +144,9 @@ func (svr *Server) SingleHandler(jsonMap map[string]any) any {
 		return CE(id, JsonRpc, "Too many requests")
 	}
 
-	//if jsonRpc != JsonRpc {
-	//	return E(id, jsonRpc, InvalidRequest)
-	//}
+	if !strings.HasPrefix(method, "/") || !strings.HasPrefix(method, ".") {
+		method = "." + method
+	}
 	sName, mName, err := ParseRequestMethod(method)
 	if err != nil {
 		return E(id, jsonRpc, MethodNotFound)
