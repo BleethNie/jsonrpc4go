@@ -67,7 +67,7 @@ func (p *Http) NewServer() Server {
 	}
 }
 
-func (s *HttpServer) Start() {
+func (s *HttpServer) Start() error {
 	// Register services
 	if s.Discovery != nil {
 		register := func(key, value interface{}) bool {
@@ -82,9 +82,7 @@ func (s *HttpServer) Start() {
 	log.Printf("Listening http://0.0.0.0:%d", s.Port)
 	s.Event <- 0
 	err := http.ListenAndServe(url, mux)
-	if err != nil {
-		log.Panic(err.Error())
-	}
+	return err
 }
 
 func (s *HttpServer) DiscoveryRegister(key, value interface{}) bool {
@@ -100,14 +98,14 @@ func (s *HttpServer) DiscoveryRegister(key, value interface{}) bool {
 func (s *HttpServer) Register(m any) {
 	err := s.Server.Register(m)
 	if err != nil {
-		log.Panic(err.Error())
+		log.Println("jsonrpc http server Register error:" + err.Error())
 	}
 }
 
 func (s *HttpServer) RegisterWithName(m any, name string) {
 	err := s.Server.RegisterWithName(m, name)
 	if err != nil {
-		log.Panic(err.Error())
+		log.Println("jsonrpc http server RegisterWithName error:" + err.Error())
 	}
 }
 
@@ -160,6 +158,6 @@ func (s *HttpServer) handleFunc(w http.ResponseWriter, r *http.Request) {
 	res := s.Server.Handler(data)
 	_, err = w.Write(res)
 	if err != nil {
-		log.Panic(err.Error())
+		log.Println("jsonrpc http server handleFunc error:" + err.Error())
 	}
 }

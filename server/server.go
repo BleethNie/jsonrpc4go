@@ -17,7 +17,7 @@ type Server interface {
 	SetOptions(any)
 	SetDiscovery(d discovery.Driver, hostname string)
 	SetRateLimit(rate.Limit, int)
-	Start()
+	Start() error
 	Register(s any)
 	RegisterWithName(s any, name string)
 	DiscoveryRegister(key, value interface{}) bool

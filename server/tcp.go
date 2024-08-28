@@ -53,7 +53,7 @@ func (p *Tcp) NewServer() Server {
 	}
 }
 
-func (s *TcpServer) Start() {
+func (s *TcpServer) Start() error {
 	// Register services
 	if s.Discovery != nil {
 		register := func(key, value interface{}) bool {
@@ -66,7 +66,7 @@ func (s *TcpServer) Start() {
 	var addr = fmt.Sprintf("%s:%d", s.Hostname, s.Port)
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
-		log.Panic(err.Error())
+		return err
 	}
 	listener, _ := net.ListenTCP("tcp", tcpAddr)
 	log.Printf("Listening tcp://%s:%d", s.Hostname, s.Port)
@@ -76,7 +76,7 @@ func (s *TcpServer) Start() {
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
-			log.Panic(err.Error())
+			return err
 		}
 		go s.handleFunc(ctx, conn)
 	}
